@@ -1,0 +1,293 @@
+Python 3.6.6 |Anaconda custom (64-bit)| (default, Jun 28 2018, 17:14:51)
+Type "copyright", "credits" or "license" for more information.
+
+IPython 6.5.0 -- An enhanced Interactive Python.
+
+"""
+Created on Wed Nov 21 21:08:16 2018
+
+@author: chubuntu
+"""
+
+import keras
+# from keras.datasets import cifar10
+from keras.preprocessing.image import ImageDataGenerator
+from keras.models import Sequential
+from keras.layers import Dense, Dropout, Activation, Flatten
+from keras.layers import Conv2D, MaxPooling2D
+Using TensorFlow backend.
+
+
+batch_size = 32
+num_classes = 10
+epochs = 20
+data_augmentation = True
+num_predictions = 20
+#save_dir = os.path.join(os.getcwd(), 'saved_models')
+#model_name = 'keras_cifar10_trained_model.h5'
+
+import _pickle as pickle
+path = "/home/chubuntu/DeepLearning/cifar-10/keras-data/"
+f_xtrain = path+"x_train"
+f_xtest = path+"x_test"
+f_ytrain = path+"y_train"
+f_ytest = path+"y_test"
+
+fo_xtrain = open(f_xtrain,'rb')
+fo_xtest = open(f_xtest,'rb')
+fo_ytrain = open(f_ytrain,'rb')
+fo_ytest = open(f_ytest,'rb')
+
+x_train = pickle.load(fo_xtrain)
+x_test = pickle.load(fo_xtest)
+y_train = pickle.load(fo_ytrain)
+y_test = pickle.load(fo_ytest)
+
+x_train = x_train/255.
+x_test = x_test/255.
+
+y_train = keras.utils.to_categorical(y_train, num_classes)
+y_test = keras.utils.to_categorical(y_test, num_classes)
+
+model = Sequential()
+model.add(Conv2D(32, (3, 3), padding='same',
+                 input_shape=x_train.shape[1:]))
+model.add(Activation('relu'))
+model.add(Conv2D(32, (3, 3)))
+model.add(Activation('relu'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Dropout(0.25))
+
+model.add(Conv2D(64, (3, 3), padding='same'))
+model.add(Activation('relu'))
+model.add(Conv2D(64, (3, 3)))
+model.add(Activation('relu'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Dropout(0.25))
+
+model.add(Flatten())
+model.add(Dense(512))
+model.add(Activation('relu'))
+model.add(Dropout(0.5))
+model.add(Dense(num_classes))
+model.add(Activation('softmax'))
+
+model.summary()
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #   
+=================================================================
+conv2d_1 (Conv2D)            (None, 32, 32, 32)        896       
+_________________________________________________________________
+activation_1 (Activation)    (None, 32, 32, 32)        0         
+_________________________________________________________________
+conv2d_2 (Conv2D)            (None, 30, 30, 32)        9248      
+_________________________________________________________________
+activation_2 (Activation)    (None, 30, 30, 32)        0         
+_________________________________________________________________
+max_pooling2d_1 (MaxPooling2 (None, 15, 15, 32)        0         
+_________________________________________________________________
+dropout_1 (Dropout)          (None, 15, 15, 32)        0         
+_________________________________________________________________
+conv2d_3 (Conv2D)            (None, 15, 15, 64)        18496     
+_________________________________________________________________
+activation_3 (Activation)    (None, 15, 15, 64)        0         
+_________________________________________________________________
+conv2d_4 (Conv2D)            (None, 13, 13, 64)        36928     
+_________________________________________________________________
+activation_4 (Activation)    (None, 13, 13, 64)        0         
+_________________________________________________________________
+max_pooling2d_2 (MaxPooling2 (None, 6, 6, 64)          0         
+_________________________________________________________________
+dropout_2 (Dropout)          (None, 6, 6, 64)          0         
+_________________________________________________________________
+flatten_1 (Flatten)          (None, 2304)              0         
+_________________________________________________________________
+dense_1 (Dense)              (None, 512)               1180160   
+_________________________________________________________________
+activation_5 (Activation)    (None, 512)               0         
+_________________________________________________________________
+dropout_3 (Dropout)          (None, 512)               0         
+_________________________________________________________________
+dense_2 (Dense)              (None, 10)                5130      
+_________________________________________________________________
+activation_6 (Activation)    (None, 10)                0         
+=================================================================
+Total params: 1,250,858
+Trainable params: 1,250,858
+Non-trainable params: 0
+_________________________________________________________________
+
+opt = keras.optimizers.rmsprop(lr=0.0001, decay=1e-6)
+
+model.compile(loss='categorical_crossentropy',
+              optimizer=opt,
+              metrics=['accuracy'])
+
+history = model.fit(x_train, y_train,
+              batch_size=batch_size,
+              epochs=epochs,
+              validation_data=(x_test, y_test)
+              )
+Train on 50000 samples, validate on 10000 samples
+Epoch 1/20
+50000/50000 [==============================] - 59s 1ms/step - loss: 1.8266 - acc: 0.3307 - val_loss: 1.5874 - val_acc: 0.4371
+Epoch 2/20
+50000/50000 [==============================] - 42s 845us/step - loss: 1.5042 - acc: 0.4534 - val_loss: 1.4038 - val_acc: 0.5006
+Epoch 3/20
+50000/50000 [==============================] - 46s 912us/step - loss: 1.3655 - acc: 0.5112 - val_loss: 1.2374 - val_acc: 0.5637
+Epoch 4/20
+50000/50000 [==============================] - 41s 822us/step - loss: 1.2740 - acc: 0.5463 - val_loss: 1.2200 - val_acc: 0.5749
+Epoch 5/20
+50000/50000 [==============================] - 40s 807us/step - loss: 1.1986 - acc: 0.5761 - val_loss: 1.1655 - val_acc: 0.5902
+Epoch 6/20
+50000/50000 [==============================] - 41s 825us/step - loss: 1.1260 - acc: 0.6037 - val_loss: 1.1283 - val_acc: 0.6063
+Epoch 7/20
+50000/50000 [==============================] - 41s 822us/step - loss: 1.0769 - acc: 0.6219 - val_loss: 0.9949 - val_acc: 0.6550
+Epoch 8/20
+50000/50000 [==============================] - 41s 826us/step - loss: 1.0292 - acc: 0.6382 - val_loss: 0.9596 - val_acc: 0.6668
+Epoch 9/20
+50000/50000 [==============================] - 42s 838us/step - loss: 0.9881 - acc: 0.6533 - val_loss: 0.9413 - val_acc: 0.6711
+Epoch 10/20
+50000/50000 [==============================] - 42s 833us/step - loss: 0.9471 - acc: 0.6692 - val_loss: 0.8901 - val_acc: 0.6928
+Epoch 11/20
+50000/50000 [==============================] - 41s 826us/step - loss: 0.9209 - acc: 0.6779 - val_loss: 0.8676 - val_acc: 0.7014
+Epoch 12/20
+50000/50000 [==============================] - 40s 804us/step - loss: 0.8912 - acc: 0.6904 - val_loss: 0.8572 - val_acc: 0.7061
+Epoch 13/20
+50000/50000 [==============================] - 39s 783us/step - loss: 0.8690 - acc: 0.6977 - val_loss: 0.8165 - val_acc: 0.7192
+Epoch 14/20
+50000/50000 [==============================] - 39s 783us/step - loss: 0.8445 - acc: 0.7062 - val_loss: 0.8337 - val_acc: 0.7173
+Epoch 15/20
+50000/50000 [==============================] - 39s 783us/step - loss: 0.8293 - acc: 0.7142 - val_loss: 0.8062 - val_acc: 0.7197
+Epoch 16/20
+50000/50000 [==============================] - 41s 825us/step - loss: 0.8084 - acc: 0.7193 - val_loss: 0.7754 - val_acc: 0.7331
+Epoch 17/20
+50000/50000 [==============================] - 40s 798us/step - loss: 0.7914 - acc: 0.7256 - val_loss: 0.7705 - val_acc: 0.7329
+Epoch 18/20
+50000/50000 [==============================] - 41s 825us/step - loss: 0.7802 - acc: 0.7313 - val_loss: 0.7838 - val_acc: 0.7340
+Epoch 19/20
+50000/50000 [==============================] - 41s 813us/step - loss: 0.7692 - acc: 0.7366 - val_loss: 0.7380 - val_acc: 0.7462
+Epoch 20/20
+50000/50000 [==============================] - 41s 814us/step - loss: 0.7545 - acc: 0.7409 - val_loss: 0.7362 - val_acc: 0.7489
+
+from keras.models import load_model
+
+model.save(path+'cifar10-relu.h5')  # creates a HDF5 file
+
+del model
+
+model = load_model(path+'cifar10-relu.h5')
+
+del model
+
+model = Sequential()
+model.add(Conv2D(32, (3, 3), padding='same',
+                 input_shape=x_train.shape[1:]))
+model.add(Activation('elu'))
+model.add(Conv2D(32, (3, 3)))
+model.add(Activation('elu'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+
+model.add(Conv2D(64, (3, 3), padding='same'))
+model.add(Activation('elu'))
+model.add(Conv2D(64, (3, 3)))
+model.add(Activation('elu'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+
+model.add(Flatten())
+model.add(Dense(512))
+model.add(Activation('elu'))
+model.add(Dense(num_classes))
+model.add(Activation('softmax'))
+
+model.summary()
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #   
+=================================================================
+conv2d_5 (Conv2D)            (None, 32, 32, 32)        896       
+_________________________________________________________________
+activation_7 (Activation)    (None, 32, 32, 32)        0         
+_________________________________________________________________
+conv2d_6 (Conv2D)            (None, 30, 30, 32)        9248      
+_________________________________________________________________
+activation_8 (Activation)    (None, 30, 30, 32)        0         
+_________________________________________________________________
+max_pooling2d_3 (MaxPooling2 (None, 15, 15, 32)        0         
+_________________________________________________________________
+conv2d_7 (Conv2D)            (None, 15, 15, 64)        18496     
+_________________________________________________________________
+activation_9 (Activation)    (None, 15, 15, 64)        0         
+_________________________________________________________________
+conv2d_8 (Conv2D)            (None, 13, 13, 64)        36928     
+_________________________________________________________________
+activation_10 (Activation)   (None, 13, 13, 64)        0         
+_________________________________________________________________
+max_pooling2d_4 (MaxPooling2 (None, 6, 6, 64)          0         
+_________________________________________________________________
+flatten_2 (Flatten)          (None, 2304)              0         
+_________________________________________________________________
+dense_3 (Dense)              (None, 512)               1180160   
+_________________________________________________________________
+activation_11 (Activation)   (None, 512)               0         
+_________________________________________________________________
+dense_4 (Dense)              (None, 10)                5130      
+_________________________________________________________________
+activation_12 (Activation)   (None, 10)                0         
+=================================================================
+Total params: 1,250,858
+Trainable params: 1,250,858
+Non-trainable params: 0
+_________________________________________________________________
+
+opt = keras.optimizers.rmsprop(lr=0.0001, decay=1e-6)
+
+model.compile(loss='categorical_crossentropy',
+              optimizer=opt,
+              metrics=['accuracy'])
+
+history = model.fit(x_train, y_train,
+              batch_size=batch_size,
+              epochs=epochs,
+              validation_data=(x_test, y_test)
+              )
+Train on 50000 samples, validate on 10000 samples
+Epoch 1/20
+50000/50000 [==============================] - 39s 782us/step - loss: 1.5519 - acc: 0.4505 - val_loss: 1.3890 - val_acc: 0.5069
+Epoch 2/20
+50000/50000 [==============================] - 39s 789us/step - loss: 1.2326 - acc: 0.5713 - val_loss: 1.1883 - val_acc: 0.5878
+Epoch 3/20
+50000/50000 [==============================] - 39s 776us/step - loss: 1.0905 - acc: 0.6217 - val_loss: 1.1572 - val_acc: 0.6045
+Epoch 4/20
+50000/50000 [==============================] - 39s 775us/step - loss: 0.9978 - acc: 0.6546 - val_loss: 1.0114 - val_acc: 0.6524
+Epoch 5/20
+50000/50000 [==============================] - 39s 776us/step - loss: 0.9248 - acc: 0.6813 - val_loss: 0.9613 - val_acc: 0.6732
+Epoch 6/20
+50000/50000 [==============================] - 39s 774us/step - loss: 0.8562 - acc: 0.7067 - val_loss: 0.9432 - val_acc: 0.6759
+Epoch 7/20
+50000/50000 [==============================] - 39s 775us/step - loss: 0.7923 - acc: 0.7274 - val_loss: 0.8859 - val_acc: 0.6979
+Epoch 8/20
+50000/50000 [==============================] - 40s 791us/step - loss: 0.7308 - acc: 0.7505 - val_loss: 0.8797 - val_acc: 0.7024
+Epoch 9/20
+50000/50000 [==============================] - 40s 791us/step - loss: 0.6722 - acc: 0.7693 - val_loss: 0.8535 - val_acc: 0.7121
+Epoch 10/20
+50000/50000 [==============================] - 39s 775us/step - loss: 0.6121 - acc: 0.7909 - val_loss: 0.8334 - val_acc: 0.7218
+Epoch 11/20
+50000/50000 [==============================] - 39s 773us/step - loss: 0.5546 - acc: 0.8114 - val_loss: 0.8578 - val_acc: 0.7205
+Epoch 12/20
+50000/50000 [==============================] - 39s 772us/step - loss: 0.4987 - acc: 0.8300 - val_loss: 0.8589 - val_acc: 0.7284
+Epoch 13/20
+50000/50000 [==============================] - 39s 774us/step - loss: 0.4454 - acc: 0.8484 - val_loss: 0.8327 - val_acc: 0.7381
+Epoch 14/20
+50000/50000 [==============================] - 39s 774us/step - loss: 0.3909 - acc: 0.8680 - val_loss: 0.8657 - val_acc: 0.7345
+Epoch 15/20
+50000/50000 [==============================] - 39s 774us/step - loss: 0.3418 - acc: 0.8850 - val_loss: 0.8978 - val_acc: 0.7336
+Epoch 16/20
+50000/50000 [==============================] - 39s 780us/step - loss: 0.2931 - acc: 0.9023 - val_loss: 0.9200 - val_acc: 0.7371
+Epoch 17/20
+50000/50000 [==============================] - 39s 787us/step - loss: 0.2460 - acc: 0.9193 - val_loss: 0.9945 - val_acc: 0.7279
+Epoch 18/20
+50000/50000 [==============================] - 39s 774us/step - loss: 0.2033 - acc: 0.9349 - val_loss: 1.0350 - val_acc: 0.7375
+Epoch 19/20
+50000/50000 [==============================] - 39s 775us/step - loss: 0.1642 - acc: 0.9489 - val_loss: 1.1101 - val_acc: 0.7324
+Epoch 20/20
+50000/50000 [==============================] - 39s 779us/step - loss: 0.1296 - acc: 0.9598 - val_loss: 1.1817 - val_acc: 0.7277
